@@ -1,0 +1,197 @@
+\documentclass[11pt,foldmark,notumble]{leaflet}
+\renewcommand*\foldmarkrule{.3mm}
+\renewcommand*\foldmarklength{5mm}
+
+\usepackage[T1]{fontenc}
+\usepackage[utf8]{inputenc}
+
+\usepackage{url}
+\usepackage{graphicx}
+
+
+\title{\bf illumos}
+
+%\CutLine*{1}% Dotted line without scissors
+%\CutLine*{6}% Dotted line without scissors
+
+\AddToBackground{1}{%  Background of a small page
+  \put(30,460){\includegraphics[scale=0.7]{images/LargePhoenixLogotypeRGB.eps}}}
+
+
+\begin{document}
+\vspace*{4cm}
+illumos is an advanced open source operating system core derived from
+OpenSolaris. The project was founded in~2010 to continue the
+development of the OpenSolaris code independently of Oracle.
+
+illumos is supported by a few companies who use the illumos code
+as a platform for their own products. The illumos project functions as
+a hub for collaboration on development of the core operating system
+used by the various different illumos distributions.
+
+Some illumos distributions are developed by companies to match their
+requirements, and they may focus on storage, virtualization, or cloud
+computing, while others are developed by hobbyists and target a more
+general server/desktop use case. They all share the common code
+consisting of the kernel, libraries, daemons, and utilities.
+
+
+\section{Core illumos Technologies}
+\subsection{ZFS - The Zettabyte File System}
+ZFS is a future-proof 128-bit filesystem focusing on guaranteed
+end-to-end data integrity, scalability, performance, and ease of use.
+ZFS makes volume managers or RAID systems unneccesary.
+
+ZFS manages hard disks and SSDs in storage pools from which storage is
+allocated on demand. This simplifies configuration and helps
+scalabilty, e.g. disks can simply be added or replaced by larger ones
+to increase pool capacity. Redundancy in a pool can be provided by
+mirroring or RAIDZ configurations. Using SSDs as cache in hard disk
+pools can substantially increase performance, but of course all-SSD
+pools are also supported.
+
+ZFS by default stores a checksum for every data and metadata block to
+allow automatic detection of errors. Automated error correction is
+done when redundancy is available. This eliminates ``silent data
+corruption'' caused by transient hardware faults. The consistency of
+the filesystem and data is guaranteed since blocks are never
+overwritten (copy-on-write) and all file system operations are handled
+as transactions.
+
+Creating filesystems, snapshots, and clones in a pool is very
+efficient and uses no storage space initially. Storage is only
+allocated from the pool when actual new data is written or old data is
+changed.
+
+The ZFS \emph{ARC}, short for ``Adaptive Replacement Cache'' is a
+modern RAM-backed read cache for data and metadata. This improves file
+system and disk performance, driving down overall system latency. It
+can also make use of SSDs as 2nd level read cache to increase cache
+size without needing massive amounts of RAM.
+
+A separate ``ZFS intent log'' (\emph{ZIL}) stored on fast SSDs can
+massively improve the performance of synchronous writes such as done
+by NFS servers. Synchronously written data is also temporarily stored
+in the ZIL until the relatively slow writes to hard disks are
+completed. This allows ZFS to quickly return the synchronous write
+calls without compromising reliability.
+
+\subsection{Virtualization}
+\textbf{Zones} are an OS-based virtualization technology that does not
+have the overhead of paravirtualization or full hardware virtualization.
+The use of system resources such as CPU time, memory, storage, network
+interfaces, and network bandwidth can be easily limited for each zone.
+Special zones called LX-branded zones can run unmodified Linux
+distributions directly on an illumos kernel, which is heavily used by
+Joyent's SmartOS to run Docker containers natively.
+
+\textbf{KVM}, the \emph{kernel virtual machine}, was ported from Linux
+to illumos by Joyent and allows running unmodified guest operating
+systems. Both technologies, KVM and zones, can be used together: KVM
+instances on SmartOS run in zones, which means that the simple
+management and resource control for zones can be applied to KVM.
+
+Both virtualization technologies make great use of ZFS snapshots and
+clones, allowing simple and instant creation of new virtual machines.
+
+\subsection{Crossbow -- Network Virtualization}
+The network virtualization technology \emph{Crossbow} allows creation
+of virtual networks, switches, and network interfaces on a single
+system. Separate instances of the network stack allow bandwidth
+control and isolation of protocols, services, and virtual machines.
+This makes it possible to consolidate complex network topologies
+including servers, routers, and firewalls on a single system.
+
+\subsection{Service Management Facility}
+The \emph{Service Management Facility} (SMF) replaces the old init
+scripts. It allows unified configuration and management of services
+in a central place and also provides monitoring and controlling of
+running services and automated restarting in the case of errors.
+
+SMF maintains dependencies between services and can start independent
+services in parallel.
+
+\subsection{Role-Based Access Control}
+\emph{Role-Based Access Control} (RBAC) is a security feature allowing
+fine-grained privileges and privileged roles to be assigned to users
+and processes. Roles are a special kind of account which cannot be
+logged into. Instead they can temporarily be assumed by normal users
+that have that role assigned to their account. The individual
+privileges may allow a user or role to perform a certain task, like
+rebooting the system, or managing a certain SMF service, without the
+requirement to allow fully privileged access to certain commands.
+
+\subsection{Fault Management Architecture}
+The \emph{Fault Management Architecture} (FMA) collects, analyzes, and
+reports errors from different hardware components such as CPUs,
+memory, and disks as well as from OS subsystems such as ZFS and SMF.
+Analysing soft errors like correctable ECC errors in main memory or
+unexpectedly long access times on disks allows prediction of failures
+and timely deactivation of devices before catastrophic failure occurs.
+
+Error reports are created in a consistent format and allow the system
+administrator to react quickly to minimize or even prevent system
+downtime.
+
+\subsection{DTrace -- Dynamic Tracing}
+DTrace is an instrumentation tool mostly used for performance analysis
+and troubleshooting. To achieve this DTrace dynamically patches live
+running instructions with instrumentation code. DTrace can instrument
+the whole software stack on a system, programs in user space as well
+as the kernel and device drivers.
+
+DTrace uses a scripting language very similar to C and awk, called
+\emph{D}, which provides numerous possibilties for filtering and
+summarizing data in a safe way in the kernel before handing it off for
+more processing in user space. This minimizes the overhead associated
+with collecting and presenting data and allows using DTrace
+safely and with minimal performance impact on production systems.
+
+The DTrace Toolkit provides a large collection of ready-made scripts
+that cover almost all aspects of performance and runtime system
+analysis.
+
+More information on DTrace can be found at \textbf{http://dtrace.org}.
+
+\section{Distributions based on illumos}
+\subsection{OpenIndiana -- http://openindiana.org}
+OpenIndiana is the successor to Sun's OpenSolaris distribution and can
+be used on both desktop and server systems. It is compatible to
+OpenSolaris; existing OpenSolaris installations can be updated to
+OpenIndiana very easily. OpenIndiana is used by many illumos
+developers as a primary development and test platform.
+
+\subsection{NexentaStor -- http://community.nexenta.com}
+NexentaStor is a NAS/SAN software solution developed by Nexenta. A
+community edition of NexentaStor is freely available but lacks some
+management features of the NexentaStor product.
+
+\subsection{SmartOS -- http://smartos.org}
+SmartOS is developed by Joyent specifically for cloud computing and
+virtualization purposes. The base system is optimized for this task
+and uses no packaging or installation. Additional software for
+SmartOS zones is provided through the NetBSD pkgsrc, which is also
+worked on by Joyent developers.
+
+\subsection{OmniOS -- http://omnios.omniti.com}
+OmniOS from OmniTI is opmitized for use on servers. Like OpenIndiana
+it uses the Image Packaging System (IPS) from OpenSolaris, but only
+essential packages for servers are provided. OmniTI offers commercial
+support for OmniOS.
+
+\subsection{Other illumos Distributions}
+\begin{itemize}
+\item \emph{DilOS} is another dpkg/apt based distribution
+\item \emph{Dyson} is a Debian derivative that uses only the kernel,
+  libc, and SMF from illumos
+\item \emph{Tribblix} provides XFCE and E17 desktops
+\item \emph{XStreamOS} from Sonicle has variants for desktop and
+  server use
+\end{itemize}
+
+\subsection{http://illumos.org}
+\subsection{discuss@lists.illumos.org}
+\subsection{developer@lists.illumos.org}
+\subsection{irc.freenode.net: \#illumos}
+
+\end{document}
